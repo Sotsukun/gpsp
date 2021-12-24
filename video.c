@@ -3417,6 +3417,7 @@ void flip_screen()
     current_scanline_ptr += pitch;                                            \
   }                                                                           \
 
+SDL_Surface* rl_screenbuffer;
 SDL_Surface* rl_screen;
 #define Average(A, B) ((((A) & 0xF7DE) >> 1) + (((B) & 0xF7DE) >> 1) + ((A) & (B) & 0x0821))
 
@@ -3801,24 +3802,25 @@ void flip_screen()
 				#ifdef ARM_ARCH
 				warm_cache_op_all(WOP_D_CLEAN);
 				#endif
-				SDL_BlitSurface(screen, &srect, rl_screen, &drect);
+				SDL_BlitSurface(screen, &srect, rl_screenbuffer, &drect);
 			break;
 			case 1:
 			
 					gba_upscale_aspect((uint16_t*) ((uint8_t*)
-					rl_screen->pixels +
-					(((GCW0_SCREEN_HEIGHT - (GBA_SCREEN_HEIGHT) * 4 / 3) / 2) * rl_screen->pitch)) /* center vertically */,
-					screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+					rl_screenbuffer->pixels +
+					(((GCW0_SCREEN_HEIGHT - (GBA_SCREEN_HEIGHT) * 4 / 3) / 2) * rl_screenbuffer->pitch)) /* center vertically */,
+					screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screenbuffer->pitch);
 			break;
 			default:
-				gba_upscale(rl_screen->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+				gba_upscale(rl_screenbuffer->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screenbuffer->pitch);
 			break;
 		}
 	}
 	else
 	{
-		SDL_BlitSurface(screen, NULL, rl_screen, NULL);
+		SDL_BlitSurface(screen, NULL, rl_screenbuffer, NULL);
 	}
+  SDL_BlitSurface(rl_screenbuffer, NULL, rl_screen, NULL);
 	SDL_Flip(rl_screen);
 }
 
@@ -3942,7 +3944,8 @@ void init_video()
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
+  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+  rl_screenbuffer = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 240 * video_scale, 160 * video_scale, 16, 0, 0, 0, 0);
   //screen = SDL_SetVideoMode(240 * video_scale, 160 * video_scale, 16, 0);
 #endif
@@ -4177,7 +4180,7 @@ void video_resolution_large()
 #else
   resolution_width = 320;
   resolution_height = 240;
-  rl_screen = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 16, SDL_HWSURFACE);
+  rl_screenbuffer = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 16, SDL_HWSURFACE);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, resolution_width * video_scale, resolution_height * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(320, 240, 16, 0);*/
 
@@ -4213,7 +4216,7 @@ void video_resolution_small()
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
+  rl_screenbuffer = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320 * video_scale, 240 * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(small_resolution_width * video_scale,
    small_resolution_height * video_scale, 16, 0);*/
@@ -4231,7 +4234,7 @@ void video_resolution_small()
       if(png == NULL){
         printf("failed to load border png\n");
       }
-      SDL_BlitSurface(png, NULL, rl_screen, NULL);
+      SDL_BlitSurface(png, NULL, rl_screenbuffer, NULL);
       SDL_FreeSurface(png);
     }
     break;
