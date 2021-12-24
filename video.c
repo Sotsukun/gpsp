@@ -3944,8 +3944,8 @@ void init_video()
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
-  rl_screenbuffer = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 16, 0, 0, 0, 0);
+  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+  rl_screenbuffer = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 32, 0, 0, 0, 0);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 240 * video_scale, 160 * video_scale, 16, 0, 0, 0, 0);
   //screen = SDL_SetVideoMode(240 * video_scale, 160 * video_scale, 16, 0);
 #endif
@@ -4180,7 +4180,8 @@ void video_resolution_large()
 #else
   resolution_width = 320;
   resolution_height = 240;
-  rl_screenbuffer = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 16, SDL_HWSURFACE);
+  rl_screenbuffer = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 32, 0, 0, 0, 0);  
+  rl_screen = SDL_SetVideoMode(resolution_width * video_scale, resolution_height * video_scale, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, resolution_width * video_scale, resolution_height * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(320, 240, 16, 0);*/
 
@@ -4216,7 +4217,8 @@ void video_resolution_small()
 
   warm_change_cb_upper(WCB_C_BIT|WCB_B_BIT, 1);
 #else
-  rl_screenbuffer = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 16, SDL_HWSURFACE);
+  rl_screenbuffer = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 240, 32, 0, 0, 0, 0);
+  rl_screen = SDL_SetVideoMode(320 * video_scale, 240 * video_scale, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
   screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320 * video_scale, 240 * video_scale, 16, 0, 0, 0, 0);
   /*screen = SDL_SetVideoMode(small_resolution_width * video_scale,
    small_resolution_height * video_scale, 16, 0);*/
